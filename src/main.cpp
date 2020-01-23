@@ -7,18 +7,11 @@
 #include <parse.h>
 
 
-#define  countday 7
-#define  countperiods  4
-#define  countklapan  4
-#define offsetData 128
-uint8_t ii=0;
-
-
-  int setting(int _setting, int ii)
-  {
-    if (_setting==0) return 0;
-    return ii;
-  }
+int setting(int _setting, int ii)
+ {
+   if (_setting==0) return 0;
+   return ii;
+ }
 
 void setKlapans(int set)
 {
