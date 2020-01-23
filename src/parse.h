@@ -1,15 +1,25 @@
 #include <Arduino.h>
 #include <variables.h>
 #include <Time.h>
-  time_t t;
+#include "esp_system.h"
+#include "esp_int_wdt.h"
+#include "esp_task_wdt.h"
 
 void parseCommand()
 {
-    t = now();
+  int packetSize = Udp.parsePacket();
+  if (packetSize) {
+    int n = Udp.read(packetBuffer, UDP_TX_PACKET_MAX_SIZE);
+    packetBuffer[n] = 0;
+    inputbuffer = packetBuffer;
+  Serial.println(inputbuffer);
+    
   if (inputbuffer.startsWith("GETTIME"))
   {
-    Serial.println(inputbuffer);
-    Serial.println("gettime");
+    #ifndef debug 
+        LOGSERIAL(inputbuffer);
+    #endif
+    time_t t = now();
     inputbuffer="OK-CURTIME:";
     inputbuffer+=String(hour(t))+":";
     inputbuffer+=String(minute(t))+":";
@@ -17,11 +27,14 @@ void parseCommand()
     inputbuffer+=String(day(t))+":";
     inputbuffer+=String(month(t))+":";
     inputbuffer+=String(year(t))+":";
-  
-    Serial.println(inputbuffer);
+    #ifndef debug 
+        LOGSERIAL(inputbuffer);
+    #endif
    
   } else if(inputbuffer.startsWith("SETTIME")){
-     Serial.println(inputbuffer);
+    #ifndef debug 
+        LOGSERIAL(inputbuffer);
+    #endif
      uint8_t end=0;
      tmElements_t temp_t;
      uint8_t start=0;
@@ -54,6 +67,7 @@ void parseCommand()
         break;
       }
      };
+
     inputbuffer="OK-SETTIME:";
     inputbuffer+=String(temp_t.Hour)+":";
     inputbuffer+=String(temp_t.Minute)+":";
@@ -64,7 +78,9 @@ void parseCommand()
     setTime(makeTime(temp_t));
     }
     else if (inputbuffer.startsWith("GETDATA")){
-    Serial.println(inputbuffer);
+      
+      Serial.println(inputbuffer);
+      
      inputbuffer="OK-GETDATA:";
      for (int k=0;k<countklapan;k++)
       {
@@ -78,7 +94,7 @@ void parseCommand()
           }
        }
     }
-    Serial.println(inputbuffer);
+      Serial.println(inputbuffer);
   }
    else if(inputbuffer.startsWith("SETDATA")){
     uint16_t start=0;
@@ -117,8 +133,13 @@ void parseCommand()
         }
        }
     }
-
+    saveToEEPROMData(offsetData,klapan);
   }
-
- 
+    byte reply[inputbuffer.length() + 1];
+    inputbuffer.getBytes(reply, inputbuffer.length() + 1);
+    Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
+    size_t len=sizeof(reply);
+    Udp.write(reply,len);
+    Udp.endPacket();
+  }
 }

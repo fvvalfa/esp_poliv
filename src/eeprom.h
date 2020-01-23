@@ -1,7 +1,9 @@
 #include <Wire.h>
 #include <Arduino.h>
 #include <variables.h>
-uint8_t error, address;
+
+uint8_t error;
+uint8_t address;
 int nDevices;  //Кол-во найденных устройств
 
 
