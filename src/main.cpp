@@ -14,7 +14,7 @@ int setting(int _setting, int ii) //Setting - 0 для заполнения ну
    if (_setting==0) return 255;
    return ii;
  }
-
+//fdhjbjkljnlkjn
 void setKlapans(int set)
 {
   int ii=0;
